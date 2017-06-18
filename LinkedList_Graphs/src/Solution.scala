@@ -2,10 +2,14 @@ import scala.collection.mutable.Stack
 import scala.collection.mutable.LinkedList
 
 object Solution {
+  
+  var visited: Array[Boolean] = Array()
+  var roadCount: Int = 0
+  
   def main (args: Array[String]) {
     
-    val file = new java.io.File("C:\\Users\\tr1c4011\\Desktop\\testInput.txt");
-    val sc = new java.util.Scanner (file);
+    //val file = new java.io.File("C:\\Users\\tr1c4011\\Desktop\\testInput.txt");
+    val sc = new java.util.Scanner (System.in);
     var q = sc.nextInt();
     for ( a_i <- 0 to (q - 1)){
       
@@ -30,100 +34,57 @@ object Solution {
       }
       
       if (croad <= clib){
-        var totalCost = DFTandNumberOfRoads(myGraph, n, clib, croad)
+        var totalCost = DFS(myGraph, n, clib, croad)
+        //var totalCost = DFSandNumberOfRoads(myGraph, n, clib, croad)
         println(totalCost.toString())  
       }
       else{
         println( (n*clib).toString())
       }
     }
-    //myGraph = InitGraph()
-
-
   }
   
-  def DFTandNumberOfRoads(g: Array[List[Int]], n: Int, unitCostOfLib: Long, unitCostOfRoad: Long): Long = {
-    var roadNumber = 0;
-    var libNumber = 0;
+  def DFS(g: Array[List[Int]], n: Int, libCost: Long, roadCost: Long): Long ={
+    var totalCost: Long = 0
     
-    var nodeStack: Stack[Int] = Stack()
-    var visitted: Array[Boolean] = new Array(n)
+    var libCount: Long = 0
+    visited = new Array(n)
+    roadCount = 0
     
-    for (i <- 0 until visitted.length){
-      visitted(i) = false;
+    for (i <- 0 until visited.length){
+      visited(i) = false;
     }
     
-    //nodeStack.push(startIndex)
-    //visitted(startIndex) = true
-    var index = 0;
-    
-    index = isCompleted(visitted)
-    while (index >=(0)){
-      visitted(index) = true
-      nodeStack.push(index)
-      libNumber += 1
-      
-      while (index != -5) {
-        index = nextPossibleNode(g, index, visitted)
-        if (index != -1){
-          nodeStack.push(index)  
-          visitted(index) = true
-          roadNumber += 1
-        }
-        else {
-          if (nodeStack.isEmpty)
-            index = -5;
-          else index = nodeStack.pop()
-        }
-      }
-        
-      index = isCompleted(visitted)
-    }
-    
-    return roadNumber * unitCostOfRoad + libNumber * unitCostOfLib;
-  }
-  
-  def isCompleted(ar: Array[Boolean]) : Int = {
-    var index = -1;
-    
-    for (i <- 0 until ar.length){
-      if (ar(i) != true)
-        return i;
-    }
-    
-    return index;
-  }
-  
-  def nextPossibleNode(g: Array[List[Int]], n: Int, visitted: Array[Boolean]): Int = {
-    var nextIndex = -1;
-    
-    for (i <- 0 until g.apply(n).length){
-      if (visitted(g.apply(n).apply(i)) == false){
-        nextIndex = g.apply(n).apply(i)
-        return nextIndex
+    for (i <- 0 until n){
+      if (visited(i) == false){
+        libCount += 1
+        DFSVisit(g, i)
       }
     }
     
-    return nextIndex
+    totalCost = roadCount*roadCost + libCost*libCount;
+    return totalCost;
   }
   
-  def InitGraph(): List[List[Int]] = {
-    var subSet: List[Int] = List(1, 2)
-    var subSet1: List[Int] = List(0, 3, 4)
-    var subSet2: List[Int] = List(0, 3)
-    var subSet3: List[Int] = List(1, 2)
-    var subSet4: List[Int] = List(1, 5)
-    var subSet5: List[Int] = List(4)
+  def DFSVisit(g: Array[List[Int]], i: Int) {
+    visited(i) = true
     
-    var graph: List[List[Int]] = List(
-      subSet,
-      subSet1,
-      subSet2,
-      subSet3,
-      subSet4,
-      subSet5
-    )
-    
-    return graph      
+    for (v <- possibleNodes(g, i)){
+      if (visited(v) == false){
+        DFSVisit(g, v)
+        roadCount = roadCount + 1
+      }
+    }
   }
+  
+  def possibleNodes(g: Array[List[Int]], index: Int): List[Int] = {
+    var adj: List[Int] = List()
+    
+    for (i <- 0 until g(index).length){
+      adj = g(index)(i) :: adj
+    }
+    
+    return adj
+  }
+
 }
